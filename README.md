@@ -35,32 +35,15 @@ Insert Command: python3 /opt/RPi-motionalert/alert.py -v -c 1 -t "%$" -p %Y-%m-%
 * -t "%$": means the Cameraname
 * -p %Y-%m-%d/%H-%M-%S.jpg: means the picture
 
+## Update ##
+If you already use it, feel free to update with
+```bash
+cd /opt/RPi-motionalert
+sudo git pull origin main
+```
+
 # sources of knowledge:
 * Animated example: https://www.animatedimages.org/img-animated-animal-image-0051-80826.htm
 * python code: https://support.pushover.net/i44-example-code-and-pushover-libraries#python-image
 * pushover parameter: https://pushover.net/api
 * motion parameter: https://motion-project.github.io/motion_config.html#conversion_specifiers
-
-
-
-
-
-
-
-## Start ##
-add it to rc.local to autostart as boot
-```bash
-sudo nano /etc/rc.local
-/opt/RPi-docscan/scan.py
-```
-
-## Update ##
-If you already use it, feel free to update with
-```bash
-cd /opt/RPi-docscan
-sudo git pull origin main
-```
-
-## Hardware ##
-### Case ###
-Case to enclosure Raspberry Pi zero ans Waveshare 1.44inch LCD HAT_ https://www.thingiverse.com/thing:5324460
