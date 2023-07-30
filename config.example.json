@@ -1,0 +1,7 @@
+{
+   "pushover":{
+      "apikey":"",
+      "userkey":""
+   },
+   "folder": "/mnt/dietpi_userdata/motioneye"
+}
