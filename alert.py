@@ -21,15 +21,6 @@ import sys
 import time
 #import urllib.request
 
-#current solution
-#sleep 2s && 
-#curl -s 
-#--form-string "token=axs1h645wvef4o7zpeurfnd1xndzi4" 
-#--form-string "user=u2ucjms27nh2xvx1m8hw8jrhc3tr5y" 
-#--form-string "message=Bewegung bei %$" 
-#-F "attachment=@/mnt/dietpi_userdata/motioneye/Camera1/%Y-%m-%d/%H-%M-%S.jpg" 
-#https://api.pushover.net/1/messages.json
-
 scriptfolder = os.path.split(os.path.abspath(__file__))[0]
 
 ##### import config.json
