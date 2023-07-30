@@ -14,9 +14,11 @@ import argparse
 import glob
 import json
 import os
+import pathlib
 import requests
 import sys
 import time
+
 
 scriptfolder = os.path.split(os.path.abspath(__file__))[0]
 
@@ -83,7 +85,6 @@ if (len(args.picture) >= 1):
             if newestdate <= os.path.getmtime(file):
                 newestdate = os.path.getmtime(file)
                 newestfile = file
-        
         ffmpeg = (
             FFmpeg()
             .option("y")
@@ -93,16 +94,22 @@ if (len(args.picture) >= 1):
                 vf="scale=320:-1:flags=lanczos"
             )
         )
-
         ffmpeg.execute()
         output_picturepath = newestfile+".gif"
-        
-else: output_picturepath = scriptfolder + "/example.gif"
+else: 
+    output_picturepath = scriptfolder + "/example.gif"
+
 
 if (args.messagetitle == ''): output_messagetitle = "Camera " + str(args.cameraid)
 else: output_messagetitle = args.messagetitle
 
 if (args.animation == True): output_messagetitle = output_messagetitle + " (GIF)"
+
+output_picturename = os.path.basename(output_picturepath)
+file_extension = pathlib.Path(output_picturepath).suffix
+if (file_extension == "gif"): output_picturemime = "image/gif"
+elif (file_extension == "jpg"): output_picturemime = "image/jpeg"
+else: output_picturemime = "application/unknown"
 
 output_messagebody = args.messagebody
 
@@ -126,10 +133,9 @@ r = requests.post("https://api.pushover.net/1/messages.json", data = {
   
 },
 files = {
-  "attachment": ("image.jpg", open(output_picturepath, "rb"), "image/gif")
+  "attachment": (output_picturename, open(output_picturepath, "rb"), output_picturemime)
 })
 
 if args.verbose == True: 
     print(r.text)
     print (output_picturepath)
-
