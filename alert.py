@@ -42,6 +42,11 @@ parser.add_argument(
     help="convert video to gif animation (makes only sense as event after motion has ended")
 
 parser.add_argument(
+    "-ka", "--keepanimationalive", 
+    action='store_true', 
+    help="let the animation keep alive, mean that GIF will not be deleted after sending")
+
+parser.add_argument(
     "-c", "--cameraid", 
     type=int, 
     choices=range(1,11), 
@@ -91,7 +96,8 @@ if (len(args.picture) >= 1):
             .input(newestfile)
             .output(
                 newestfile+".gif",
-                vf="scale=320:-1:flags=lanczos"
+#                vf="scale=320:-1:flags=lanczos"
+                vf="scale=320:-1"
             )
         )
         ffmpeg.execute()
@@ -135,6 +141,8 @@ r = requests.post("https://api.pushover.net/1/messages.json", data = {
 files = {
   "attachment": (output_picturename, open(output_picturepath, "rb"), output_picturemime)
 })
+
+if (args.keepanimationalive == false): os.remove(output_picturepath)
 
 if args.verbose == True: 
     print(r.text)
