@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 # Creator: Thiemo Schuff, thiemo@schuff.eu
 # Source: https://github.com/Starwhooper/RPi-motionalert
 
@@ -42,7 +42,7 @@ parser.add_argument(
     help="convert video to gif animation (makes only sense as event after motion has ended")
 
 parser.add_argument(
-    "-ka", "--keepanimationalive", 
+    "-ka", "--keepanimation", 
     action='store_true', 
     help="let the animation keep alive, mean that GIF will not be deleted after sending")
 
@@ -100,11 +100,18 @@ if (len(args.picture) >= 1):
                 vf="scale=320:-1"
             )
         )
+        #best quality:
+        #ffmpeg -i 20-22-20.avi -filter_complex "[0:v] palettegen" 20-22-20.palette.png
+        #ffmpeg -i 20-22-20.avi -i 20-22-20.palette.png -filter_complex "[0:v] fps=25,scale=320:-1 [new];[new][1:v] paletteuse" 20-22-20.best.gif
+        #oneliner: ffmpeg -y -i 20-22-20.avi -filter_complex "scale=320:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=256[p];[s1][p]paletteuse=dither=bayer" small.gif
         ffmpeg.execute()
         output_picturepath = newestfile+".gif"
 else: 
-    output_picturepath = scriptfolder + "/example.gif"
+    output_picturepath = scriptfolder + "/" + cf['exampleanimation']
 
+stats = os.stat(output_picturepath)
+
+if  (stats.st_size > cf['pushover']['maxattachmentsize']): output_picturepath = scriptfolder + "/example.gif"
 
 if (args.messagetitle == ''): output_messagetitle = "Camera " + str(args.cameraid)
 else: output_messagetitle = args.messagetitle
@@ -118,6 +125,8 @@ elif (file_extension == "jpg"): output_picturemime = "image/jpeg"
 else: output_picturemime = "application/unknown"
 
 output_messagebody = args.messagebody
+#https://pushover.net/api#attachments
+if (stats.st_size > cf['pushover']['maxattachmentsize']): output_messagebody = output_messagebody + ' (At ' + stats.st_size + " bytes, the attached video is too large for pushover's " + cf['pushover']['maxattachmentsize'] + " bytes limit and has therefore been replaced with the usual example image.)"
 
 ##### send message
 r = requests.post("https://api.pushover.net/1/messages.json", data = {
@@ -142,7 +151,7 @@ files = {
   "attachment": (output_picturename, open(output_picturepath, "rb"), output_picturemime)
 })
 
-if (args.keepanimationalive == false): os.remove(output_picturepath)
+if (args.keepanimation == False and output_picturepath != scriptfolder + "/" + cf['exampleanimation'] ):  os.remove(output_picturepath)
 
 if args.verbose == True: 
     print(r.text)
