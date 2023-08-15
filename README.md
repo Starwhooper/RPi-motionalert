@@ -23,7 +23,7 @@ sudo git clone https://github.com/Starwhooper/RPi-motionalert /opt/RPi-motionale
 ```
 ## First configurtion ##
 ```bash
-sudo cp /opt/RPi-motionalert/config.json.example /opt/RPi-motionalert/config.json
+sudo cp /opt/RPi-motionalert/config.example.json /opt/RPi-motionalert/config.json
 sudo nano /opt/RPi-motionalert/config.json
 ```
 insert apikey and userkey for pushover and check the right folder
