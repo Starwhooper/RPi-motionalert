@@ -29,7 +29,7 @@ try:
 except:
  sys.exit('exit: The configuration file ' + scriptfolder + '/config.json does not exist or has incorrect content. Please rename the file config.json.example to config.json and change the content as required ')
 
-if (os.path.isdir(cf['folder'])) == False : sys.exit('exit: folder ' + cf['folder'] + ' not found, please check parameter folder in file ' + scriptfolder + '/config.json. This folder typical includes the Folder Camera1, Camera2, Camera3 ...')
+if (os.path.isdir(cf['camerafolder'])) == False : sys.exit('exit: folder ' + cf['camerafolder'] + ' not found, please check parameter folder in file ' + scriptfolder + '/config.json. This folder typical includes the Folder Camera1, Camera2, Camera3 ...')
 
 parser = argparse.ArgumentParser(
     prog='RPI-motionalery by Starwhooper',
@@ -76,36 +76,46 @@ parser.add_argument(
     help="verbose feedback")
 
 args = parser.parse_args()
+output_messagebody = ""
 
-if (os.path.isdir(cf['folder'] + "/Camera" + str(args.cameraid))) == False : sys.exit('exit: folder ' + cf['folder'] + '/Camera' + str(args.cameraid) + ' not found, please check camera ID')
+if (os.path.isdir(cf['camerafolder'] + "/Camera" + str(args.cameraid))) == False : sys.exit('exit: folder ' + cf['camerafolder'] + '/Camera' + str(args.cameraid) + ' not found, please check camera ID')
 
 if (len(args.picture) >= 1):
     if (args.animation == False):
-        if (os.path.isfile(cf['folder'] + "/Camera" + str(args.cameraid) + '/' + args.picture)) == False : sys.exit('exit: ' + cf['folder'] + "/Camera" + str(args.cameraid) + '/' + args.picture + ' not found')
+        if (os.path.isfile(cf['camerafolder'] + "/Camera" + str(args.cameraid) + '/' + args.picture)) == False : sys.exit('exit: ' + cf['camerafolder'] + "/Camera" + str(args.cameraid) + '/' + args.picture + ' not found')
         time.sleep(2)
-        output_picturepath = cf['folder'] + "/Camera" + str(args.cameraid) + '/' + args.picture
+        output_picturepath = cf['camerafolder'] + "/Camera" + str(args.cameraid) + '/' + args.picture
     else:
         newestdate = newestfile = 0
-        for file in glob.glob(cf['folder'] + "/Camera" + str(args.cameraid) + '/' + args.picture, recursive=False):
+        for file in glob.glob(cf['camerafolder'] + "/Camera" + str(args.cameraid) + '/' + args.picture, recursive=False):
             if newestdate <= os.path.getmtime(file):
                 newestdate = os.path.getmtime(file)
                 newestfile = file
-        ffmpeg = (
-            FFmpeg()
-            .option("y")
-            .input(newestfile)
-            .output(
-                newestfile+".gif",
-#                vf="scale=320:-1:flags=lanczos"
-                vf="scale=320:-1"
+        if (newestfile != 0):
+            ffmpeg = (
+                FFmpeg()
+                .option("y")
+                .input(newestfile)
+                .output(
+                    newestfile+".gif",
+                    vf="scale=320:-1"
+                )
             )
-        )
-        #best quality:
-        #ffmpeg -i 20-22-20.avi -filter_complex "[0:v] palettegen" 20-22-20.palette.png
-        #ffmpeg -i 20-22-20.avi -i 20-22-20.palette.png -filter_complex "[0:v] fps=25,scale=320:-1 [new];[new][1:v] paletteuse" 20-22-20.best.gif
-        #oneliner: ffmpeg -y -i 20-22-20.avi -filter_complex "scale=320:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=256[p];[s1][p]paletteuse=dither=bayer" small.gif
-        ffmpeg.execute()
-        output_picturepath = newestfile+".gif"
+
+            #best quality:
+            #ffmpeg -i 20-22-20.avi -filter_complex "[0:v] palettegen" 20-22-20.palette.png
+            #ffmpeg -i 20-22-20.avi -i 20-22-20.palette.png -filter_complex "[0:v] fps=25,scale=320:-1 [new];[new][1:v] paletteuse" 20-22-20.best.gif
+            #oneliner: ffmpeg -y -i 20-22-20.avi -filter_complex "scale=320:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=256[p];[s1][p]paletteuse=dither=bayer" small.gif
+            try:
+                ffmpeg.execute()
+                output_picturepath = newestfile+".gif"
+            except:
+                print("FAILED: ffmpeg -y -i " + newestfile + " -filter_complex \"scale=320:-1\" " + newestfile + ".gif")
+                output_messagebody = output_messagebody + "could not convert video to gif\n"
+                output_picturepath = scriptfolder + "/" + cf['exampleanimation']
+        else:
+            output_picturepath = scriptfolder + "/" + cf['exampleanimation']
+            output_messagebody = output_messagebody + "No media found: " + cf['camerafolder'] + "/Camera" + str(args.cameraid) + '/' + args.picture + "\n"
 else: 
     output_picturepath = scriptfolder + "/" + cf['exampleanimation']
 
@@ -124,7 +134,7 @@ if (file_extension == "gif"): output_picturemime = "image/gif"
 elif (file_extension == "jpg"): output_picturemime = "image/jpeg"
 else: output_picturemime = "application/unknown"
 
-output_messagebody = args.messagebody
+output_messagebody = output_messagebody + args.messagebody
 #https://pushover.net/api#attachments
 if (stats.st_size > cf['pushover']['maxattachmentsize']): output_messagebody = output_messagebody + ' (At ' + stats.st_size + " bytes, the attached video is too large for pushover's " + cf['pushover']['maxattachmentsize'] + " bytes limit and has therefore been replaced with the usual example image.)"
 
