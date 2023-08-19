@@ -4,6 +4,6 @@
       "userkey":"",
 	  "maxattachmentsize": 2621440
    },
-   "folder": "/mnt/dietpi_userdata/motioneye",
+   "camerafolder": "/mnt/dietpi_userdata/motioneye",
    "exampleanimation": "example.gif"
 }
